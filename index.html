@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>下载 · 心信白板</title>
+<meta name="description" content="心信白板 —— 液态玻璃白板，支持 Windows、Android 与 Linux。内置函数图象、几何教具、化学实验室、PPT 工坊，可离线使用。">
+<meta name="theme-color" content="#eef3ff">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232b7be4'/%3E%3Cstop offset='1' stop-color='%237a5ce6'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='15' fill='url(%23g)'/%3E%3Crect x='13' y='16' width='38' height='30' rx='4' fill='%23fff'/%3E%3C/svg%3E">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --brand: #2b7be4;
+    --brand-2: #7a5ce6;
+    --ink: #0d1b2a;
+    --ink-2: #4a5b70;
+    --ink-3: #8494a8;
+    --card: rgba(255, 255, 255, 0.62);
+    --card-border: rgba(255, 255, 255, 0.85);
+    --shadow: 0 18px 48px rgba(29, 52, 92, 0.10), 0 2px 8px rgba(29, 52, 92, 0.05);
+    --radius: 24px;
+    --ease: cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB",
+                 "Microsoft YaHei", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(1200px 700px at 12% -10%, #dbe8ff 0%, rgba(219, 232, 255, 0) 60%),
+      radial-gradient(1000px 650px at 92% 6%, #efe1ff 0%, rgba(239, 225, 255, 0) 58%),
+      radial-gradient(900px 600px at 50% 105%, #dff7f2 0%, rgba(223, 247, 242, 0) 62%),
+      linear-gradient(170deg, #f3f7ff 0%, #f8f3ff 48%, #f2fbf9 100%);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    padding: clamp(24px, 5vw, 56px) clamp(18px, 5vw, 40px) 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* 漂浮光斑 */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 0;
+    animation: float 18s ease-in-out infinite;
+  }
+  .orb.a { width: 380px; height: 380px; left: -110px; top: 6%; background: #a9c8ff; }
+  .orb.b { width: 320px; height: 320px; right: -90px; top: 28%; background: #d6bcff; animation-delay: -6s; }
+  .orb.c { width: 300px; height: 300px; left: 38%; bottom: -120px; background: #a9ecdf; animation-delay: -12s; }
+  @keyframes float {
+    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+    50% { transform: translate3d(14px, -22px, 0) scale(1.07); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .orb { animation: none; }
+    * { transition: none !important; }
+  }
+
+  .wrap { width: 100%; max-width: 980px; position: relative; z-index: 1; }
+
+  /* ============ 头部 ============ */
+  header { text-align: center; margin-bottom: clamp(30px, 5vw, 46px); }
+
+  .logo {
+    width: 76px; height: 76px;
+    border-radius: 19px;
+    display: block;
+    margin: 0 auto 20px;
+    box-shadow: 0 16px 34px rgba(43, 123, 228, 0.32), 0 2px 6px rgba(43, 123, 228, 0.18);
+  }
+
+  h1 {
+    font-size: clamp(30px, 5.4vw, 42px);
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1.15;
+    background: linear-gradient(120deg, #1a3c6e 0%, #2b7be4 42%, #7a5ce6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .sub {
+    margin-top: 12px;
+    font-size: clamp(14px, 2.4vw, 16px);
+    color: var(--ink-2);
+    line-height: 1.7;
+  }
+
+  .badges {
+    margin-top: 18px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+  }
+  .badge {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    color: #2a4a72;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4px 12px rgba(29, 52, 92, 0.06);
+  }
+
+  /* ============ 下载卡片 ============ */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(14px, 2.4vw, 22px);
+  }
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 620px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    position: relative;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(26px) saturate(170%);
+    -webkit-backdrop-filter: blur(26px) saturate(170%);
+    padding: clamp(20px, 3vw, 26px);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.45s var(--ease), box-shadow 0.45s var(--ease);
+    overflow: hidden;
+  }
+  .card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(140deg, rgba(255,255,255,0.55), rgba(255,255,255,0) 46%);
+    pointer-events: none;
+  }
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 26px 62px rgba(29, 52, 92, 0.14), 0 4px 12px rgba(29, 52, 92, 0.06);
+  }
+
+  .card-top { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+
+  .plat-icon {
+    width: 56px; height: 56px;
+    border-radius: 16px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    color: #fff;
+  }
+  .plat-icon svg { width: 30px; height: 30px; fill: currentColor; }
+  .plat-icon.win { background: linear-gradient(135deg, #0a84ff, #2b7be4); box-shadow: 0 10px 22px rgba(10, 132, 255, 0.34); }
+  .plat-icon.android { background: linear-gradient(135deg, #3ddc84, #14a05a); box-shadow: 0 10px 22px rgba(20, 160, 90, 0.32); }
+  .plat-icon.linux { background: linear-gradient(135deg, #55637a, #1c2432); box-shadow: 0 10px 22px rgba(28, 36, 50, 0.34); }
+  .plat-icon.linux svg { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .plat-icon.linux svg .solid { fill: currentColor; stroke: none; }
+
+  .card-title { font-size: 17px; font-weight: 700; letter-spacing: -0.2px; }
+  .card-meta { margin-top: 5px; font-size: 12.5px; color: var(--ink-3); line-height: 1.5; }
+
+  .specs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    margin-bottom: 20px;
+    font-size: 12.5px;
+    color: var(--ink-2);
+  }
+  .spec { display: flex; align-items: baseline; gap: 6px; }
+  .spec b { font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .spec span { color: var(--ink-3); }
+
+  .btn {
+    margin-top: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    width: 100%;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
+    background: linear-gradient(120deg, #2b7be4, #5b6fe8 55%, #7a5ce6);
+    background-size: 160% 100%;
+    box-shadow: 0 10px 24px rgba(43, 123, 228, 0.30);
+    transition: transform 0.28s var(--ease), box-shadow 0.28s var(--ease), background-position 0.5s var(--ease);
+    position: relative;
+    z-index: 1;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(43, 123, 228, 0.38); background-position: 100% 0; }
+  .btn:active { transform: translateY(0) scale(0.99); }
+  .btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .btn.android-btn { background: linear-gradient(120deg, #14a05a, #2fbf70 55%, #3ddc84); box-shadow: 0 10px 24px rgba(20, 160, 90, 0.28); }
+  .btn.android-btn:hover { box-shadow: 0 14px 30px rgba(20, 160, 90, 0.36); }
+  .btn.linux-btn { background: linear-gradient(120deg, #2f3a4c, #4a5a72 55%, #64748b); box-shadow: 0 10px 24px rgba(47, 58, 76, 0.26); }
+  .btn.linux-btn:hover { box-shadow: 0 14px 30px rgba(47, 58, 76, 0.34); }
+  .btn.busy { opacity: 0.75; pointer-events: none; }
+
+  .hint {
+    margin-top: 12px;
+    font-size: 11.5px;
+    line-height: 1.65;
+    color: var(--ink-3);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* 提取码小字（整行可点击跳转） */
+  .pwd {
+    display: block;
+    margin-top: 10px;
+    font-size: 11.5px;
+    line-height: 1.6;
+    color: var(--ink-3);
+    text-decoration: none;
+    text-align: center;
+    letter-spacing: 0.2px;
+    position: relative;
+    z-index: 1;
+    transition: color 0.25s var(--ease);
+  }
+  .pwd b {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-2);
+    transition: color 0.25s var(--ease);
+  }
+  .pwd:hover { color: var(--brand); }
+  .pwd:hover b { color: var(--brand); }
+
+  /* ============ 网页版入口 ============ */
+  .web {
+    margin-top: clamp(16px, 2.6vw, 22px);
+    background: linear-gradient(125deg, rgba(255,255,255,0.78), rgba(240,246,255,0.62));
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(26px) saturate(170%);
+    -webkit-backdrop-filter: blur(26px) saturate(170%);
+    padding: clamp(20px, 3vw, 26px);
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    flex-wrap: wrap;
+    transition: transform 0.45s var(--ease), box-shadow 0.45s var(--ease);
+  }
+  .web:hover { transform: translateY(-4px); box-shadow: 0 26px 62px rgba(29, 52, 92, 0.13); }
+
+  .web-icon {
+    width: 56px; height: 56px; border-radius: 16px; flex-shrink: 0;
+    display: grid; place-items: center;
+    background: linear-gradient(135deg, #7a5ce6, #c05ce6);
+    box-shadow: 0 10px 22px rgba(122, 92, 230, 0.32);
+    color: #fff;
+  }
+  .web-icon svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+
+  .web-text { flex: 1 1 260px; min-width: 0; }
+  .web-title { font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .web-title .tag {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.4px;
+    padding: 3px 8px; border-radius: 999px;
+    color: #5a3fc0; background: rgba(122, 92, 230, 0.12);
+    border: 1px solid rgba(122, 92, 230, 0.18);
+  }
+  .web-desc { margin-top: 6px; font-size: 12.5px; line-height: 1.6; color: var(--ink-3); }
+
+  .web-btn {
+    flex-shrink: 0;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 13px 22px;
+    border-radius: 14px;
+    font-size: 14px; font-weight: 700;
+    color: #4a2fb0;
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1.5px solid rgba(122, 92, 230, 0.35);
+    box-shadow: 0 8px 20px rgba(122, 92, 230, 0.14);
+    transition: transform 0.28s var(--ease), box-shadow 0.28s var(--ease), background 0.28s var(--ease);
+  }
+  .web-btn:hover { transform: translateY(-2px); background: #fff; box-shadow: 0 12px 26px rgba(122, 92, 230, 0.22); }
+  .web-btn:active { transform: translateY(0) scale(0.99); }
+  .web-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  @media (max-width: 560px) {
+    .web { gap: 16px; }
+    .web-btn { width: 100%; justify-content: center; }
+  }
+
+  /* ============ 特性条 ============ */
+  .features {
+    margin-top: clamp(26px, 4vw, 40px);
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+  @media (max-width: 760px) { .features { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+  .feature {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 16px;
+    padding: 15px 16px;
+    box-shadow: 0 8px 20px rgba(29, 52, 92, 0.05);
+  }
+  .feature .fi {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 9px;
+    color: #fff;
+  }
+  .feature .fi svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .fi.pen { background: linear-gradient(135deg, #2b7be4, #5b8ef0); box-shadow: 0 6px 14px rgba(43, 123, 228, 0.28); }
+  .fi.ruler { background: linear-gradient(135deg, #14a05a, #3ddc84); box-shadow: 0 6px 14px rgba(20, 160, 90, 0.26); }
+  .fi.flask { background: linear-gradient(135deg, #e8862b, #f0b13d); box-shadow: 0 6px 14px rgba(232, 134, 43, 0.26); }
+  .fi.save { background: linear-gradient(135deg, #7a5ce6, #b07ae6); box-shadow: 0 6px 14px rgba(122, 92, 230, 0.26); }
+  .feature h3 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .feature p { font-size: 11.5px; line-height: 1.6; color: var(--ink-3); }
+
+  /* ============ 页脚 ============ */
+  footer {
+    margin-top: clamp(34px, 5vw, 54px);
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--ink-3);
+  }
+  footer .dot { margin: 0 8px; opacity: 0.5; }
+
+  /* ============ Toast ============ */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 34px;
+    transform: translateX(-50%) translateY(16px);
+    background: rgba(15, 26, 42, 0.92);
+    color: #eef4ff;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 12px 22px;
+    border-radius: 14px;
+    box-shadow: 0 18px 40px rgba(15, 26, 42, 0.28);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.32s var(--ease), transform 0.32s var(--ease);
+    z-index: 50;
+    max-width: min(90vw, 520px);
+    text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="orb a"></div>
+<div class="orb b"></div>
+<div class="orb c"></div>
+
+<div class="wrap">
+
+  <header>
+    <svg class="logo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-label="心信白板">
+      <defs>
+        <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#2b7be4"/>
+          <stop offset="0.6" stop-color="#5b6fe8"/>
+          <stop offset="1" stop-color="#7a5ce6"/>
+        </linearGradient>
+      </defs>
+      <rect width="64" height="64" rx="15" fill="url(#lg)"/>
+      <rect x="13" y="16" width="38" height="30" rx="4.5" fill="#fff" opacity="0.97"/>
+      <path d="M19 26.5 L29 24.5 L37.5 28" fill="none" stroke="#2b7be4" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M19 34 L31.5 32.8" fill="none" stroke="#e84c3d" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M19 40.5 L26.5 40" fill="none" stroke="#2ecc71" stroke-width="2.6" stroke-linecap="round"/>
+      <circle cx="40.5" cy="36.5" r="3.1" fill="#f1c40f"/>
+      <rect x="29.4" y="46" width="5.2" height="3.6" rx="1" fill="#fff" opacity="0.95"/>
+      <rect x="23" y="49.6" width="18" height="3" rx="1.5" fill="#fff" opacity="0.95"/>
+    </svg>
+
+    <h1>心信白板</h1>
+    <p class="sub">液态玻璃白板 · 为课堂而生</p>
+
+    <div class="badges">
+      <span class="badge">v1.0 正式版</span>
+      <span class="badge">Windows · Android · Linux</span>
+      <span class="badge">完全离线</span>
+      <span class="badge">数据存本地</span>
+    </div>
+  </header>
+
+  <main class="grid">
+    <!-- Windows -->
+    <section class="card">
+      <div class="card-top">
+        <div class="plat-icon win" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M0 3.449 9.75 2.1v9.451H0V3.449Zm10.949-1.567L24 0v11.4H10.949V1.882ZM0 12.6h9.75v9.451L0 20.699V12.6Zm10.949 0H24V24l-12.9-1.801V12.6Z"/></svg>
+        </div>
+        <div>
+          <div class="card-title">心信白板 for Windows</div>
+          <div class="card-meta">Windows 10 / 11 · 64 位 · 解压即用</div>
+        </div>
+      </div>
+
+      <div class="specs">
+        <div class="spec"><span>版本</span><b>1.0.0</b></div>
+        <div class="spec"><span>大小</span><b>108.6 MB</b></div>
+        <div class="spec"><span>格式</span><b>ZIP</b></div>
+      </div>
+
+      <a class="btn" id="dlWin" href="https://pan.baidu.com/s/1FPOJm9bU7hzGsewjgXz-BA?pwd=2027"
+         target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4.5-4.5M12 15l-4.5-4.5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        前往网盘下载
+      </a>
+
+      <a class="pwd" href="https://pan.baidu.com/s/1FPOJm9bU7hzGsewjgXz-BA?pwd=2027"
+         target="_blank" rel="noopener noreferrer">提取码 <b>2027</b> · 点击跳转</a>
+
+      <p class="hint">解压后双击「心信白板.exe」运行。若被 SmartScreen 拦截，点「更多信息 → 仍要运行」。</p>
+    </section>
+
+    <!-- Android -->
+    <section class="card">
+      <div class="card-top">
+        <div class="plat-icon android" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M17.6 9.48l1.84-3.18a.38.38 0 0 0-.14-.52.38.38 0 0 0-.52.14l-1.87 3.23a11.4 11.4 0 0 0-8.94 0L6.1 5.92a.38.38 0 0 0-.52-.14.38.38 0 0 0-.14.52L7.3 9.48A10.8 10.8 0 0 0 1.78 18h20.44A10.8 10.8 0 0 0 17.6 9.48ZM6.5 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Zm11 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5Z"/></svg>
+        </div>
+        <div>
+          <div class="card-title">心信白板 for Android</div>
+          <div class="card-meta">Android 7.0+ · 支持平板与手机</div>
+        </div>
+      </div>
+
+      <div class="specs">
+        <div class="spec"><span>版本</span><b>1.0</b></div>
+        <div class="spec"><span>大小</span><b>489 KB</b></div>
+        <div class="spec"><span>格式</span><b>APK</b></div>
+      </div>
+
+      <a class="btn android-btn" id="dlAndroid" href="https://pan.baidu.com/s/1FPOJm9bU7hzGsewjgXz-BA?pwd=2027"
+         target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4.5-4.5M12 15l-4.5-4.5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        前往网盘下载
+      </a>
+
+      <a class="pwd" href="https://pan.baidu.com/s/1FPOJm9bU7hzGsewjgXz-BA?pwd=2027"
+         target="_blank" rel="noopener noreferrer">提取码 <b>2027</b> · 点击跳转</a>
+
+      <p class="hint">安装时若提示「未知来源应用」，请在系统设置中允许本次安装。</p>
+    </section>
+
+    <!-- Linux -->
+    <section class="card">
+      <div class="card-top">
+        <div class="plat-icon linux" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 2.4c-2.5 0-4.2 1.9-4.2 4.4 0 1.4.3 2.3.8 3.1-1.7 1.6-2.7 3.9-2.7 6.2 0 3.5 2.7 6.1 6.1 6.1s6.1-2.6 6.1-6.1c0-2.3-1-4.6-2.7-6.2.5-.8.8-1.7.8-3.1 0-2.5-1.7-4.4-4.2-4.4Z"/>
+            <path d="M12 9.3c-1.8 0-3.2 2.2-3.2 4.8s1.4 4.7 3.2 4.7 3.2-2.1 3.2-4.7-1.4-4.8-3.2-4.8Z"/>
+            <circle class="solid" cx="10.3" cy="7.3" r="0.85"/>
+            <circle class="solid" cx="13.7" cy="7.3" r="0.85"/>
+            <path class="solid" d="M12 8.6l1.6 2-1.6.9-1.6-.9 1.6-2Z"/>
+            <path d="M9.4 19.6l-.8 1.9M14.6 19.6l.8 1.9"/>
+          </svg>
+        </div>
+        <div>
+          <div class="card-title">心信白板 for Linux</div>
+          <div class="card-meta">x86_64 · AppImage / 解压即用</div>
+        </div>
+      </div>
+
+      <div class="specs">
+        <div class="spec"><span>版本</span><b>1.0</b></div>
+        <div class="spec"><span>格式</span><b>压缩包</b></div>
+        <div class="spec"><span>依赖</span><b>无</b></div>
+      </div>
+
+      <a class="btn linux-btn" id="dlLinux" href="https://pan.baidu.com/s/1FPOJm9bU7hzGsewjgXz-BA?pwd=2027"
+         target="_blank" rel="noopener noreferrer">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4.5-4.5M12 15l-4.5-4.5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        前往网盘下载
+      </a>
+
+      <a class="pwd" href="https://pan.baidu.com/s/1FPOJm9bU7hzGsewjgXz-BA?pwd=2027"
+         target="_blank" rel="noopener noreferrer">提取码 <b>2027</b> · 点击跳转</a>
+
+      <p class="hint">下载后解压，给可执行文件加执行权限（chmod +x）即可运行；也可直接用网页版。</p>
+    </section>
+  </main>
+
+  <!-- 网页版 -->
+  <section class="web">
+    <div class="web-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3.5 9h17M3.5 15h17"/><path d="M12 3c2.6 2.6 3.9 5.7 3.9 9S14.6 18.4 12 21c-2.6-2.6-3.9-5.7-3.9-9S9.4 5.6 12 3Z"/></svg>
+    </div>
+    <div class="web-text">
+      <div class="web-title">网页全功能使用 <span class="tag">免安装</span></div>
+      <p class="web-desc">浏览器打开即用，功能与客户端完全一致；板书自动保存在本机浏览器中。</p>
+    </div>
+    <a class="web-btn" href="https://wordfff.github.io/Blackboard/" target="_blank" rel="noopener noreferrer">
+      打开网页版
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6"/><path d="M20 4 10.5 13.5"/><path d="M19 14v4a2.5 2.5 0 0 1-2.5 2.5h-10A2.5 2.5 0 0 1 4 18V8a2.5 2.5 0 0 1 2.5-2.5h4"/></svg>
+    </a>
+  </section>
+
+  <!-- 特性 -->
+  <div class="features">
+    <div class="feature">
+      <span class="fi pen"><svg viewBox="0 0 24 24"><path d="M4 20l1.2-4.2L16.6 4.4a2.1 2.1 0 0 1 3 3L8.2 18.8 4 20Z"/><path d="M13.5 6.5l3 3"/></svg></span>
+      <h3>自由板书</h3>
+      <p>画笔、橡皮、图形、文字，双指缩放整块画布</p>
+    </div>
+    <div class="feature">
+      <span class="fi ruler"><svg viewBox="0 0 24 24"><path d="M3 20 20 3v17H3Z"/><path d="M9.5 20v-5.5L15 20"/></svg></span>
+      <h3>学科工具</h3>
+      <p>函数图象、量角器、三角板、圆规与格纸</p>
+    </div>
+    <div class="feature">
+      <span class="fi flask"><svg viewBox="0 0 24 24"><path d="M10 3h4M10.5 3v6L5.5 17a2.4 2.4 0 0 0 2.1 3.6h8.8a2.4 2.4 0 0 0 2.1-3.6l-5-8V3"/><path d="M8 14.5h8"/></svg></span>
+      <h3>化学实验室</h3>
+      <p>烧杯与试剂演示，危险实验附安全提示</p>
+    </div>
+    <div class="feature">
+      <span class="fi save"><svg viewBox="0 0 24 24"><path d="M5 3h11l3 3v13a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M8 3v5h7V3M8 21v-7h8v7"/></svg></span>
+      <h3>工程文件</h3>
+      <p>一键导出 .xxl，换设备也能完整恢复</p>
+    </div>
+  </div>
+
+  <footer>
+    心信白板 · 教学白板工具
+    <span class="dot">·</span>
+    完全离线运行，无数据上传
+    <span class="dot">·</span>
+    网页版由 GitHub Pages 提供
+  </footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  (function () {
+    var toastEl = document.getElementById('toast');
+    var toastTimer = null;
+
+    function toast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 3200);
+    }
+
+    function bind(btnId, label) {
+      var btn = document.getElementById(btnId);
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        toast('正在打开百度网盘 · ' + label + '，提取码 2027');
+      });
+    }
+
+    bind('dlWin', 'Windows 版');
+    bind('dlAndroid', 'Android 版');
+    bind('dlLinux', 'Linux 版');
+  })();
+</script>
+
+</body>
+</html>
